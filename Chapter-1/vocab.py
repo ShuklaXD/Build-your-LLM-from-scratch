@@ -4,5 +4,10 @@ class VocabGenerator:
 
     def build_vocab(self):
         unique_words = sorted(set(self.words))
-        str_to_int = {word: idx for idx, word in enumerate(unique_words)}
+        
+        # Add special tokens towards the end of the vocabulary
+        vocab = list(unique_words)
+        vocab.extend(["<|endoftext|>", "<|unk|>"])
+
+        str_to_int = {word: idx for idx, word in enumerate(vocab)}
         return str_to_int

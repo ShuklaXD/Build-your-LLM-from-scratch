@@ -13,8 +13,8 @@ if __name__ == "__main__":
     print(preprocessed[:20])
 
     all_words = sorted(set(preprocessed))
-    vocab_size = len(all_words)
-    print(vocab_size)
+    print("Unique words:", len(all_words))
+    print("First 20 words in vocab:", all_words[:20])
 
     print("Total number of words:", len(preprocessed))
     vocab_gen = vocab.VocabGenerator(preprocessed)
@@ -23,7 +23,10 @@ if __name__ == "__main__":
     print("Vocabulary size:", len(vocab))
     tokenizer_v1 = tokenizer.SimpleTokenizerV1(vocab)
 
-    sample_text = "Hello, do you like tea?"
+    text1 = "Hello, do you like tea?"
+    text2 = "In the sunlit terraces of the palace."
+    sample_text = " <|endoftext|> ".join((text1, text2))
+    print(sample_text)
     encoded = tokenizer_v1.encode(sample_text)
     decoded = tokenizer_v1.decode(encoded)
 

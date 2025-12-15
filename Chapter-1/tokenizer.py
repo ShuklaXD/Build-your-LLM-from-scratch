@@ -12,7 +12,12 @@ class SimpleTokenizerV1:
 
     def encode(self, text):
         preprocessed = self.extract_tokens(text)
-        ids = [self.str_to_int[s] for s in preprocessed]
+        
+        # handle unknown tokens
+        item = lambda s: s if s in self.str_to_int else "<|unk|>"
+        preprocessed = [ item(s) for s in preprocessed ]
+
+        ids = [self.str_to_int[s] for s in preprocessed ]
         print("Preprocessed tokens:", len(preprocessed), preprocessed)
         return ids
 

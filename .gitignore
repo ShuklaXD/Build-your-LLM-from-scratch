@@ -1,0 +1,7 @@
+# ignore virtual environment directories
+venv/
+llm-env/
+
+# ignore Python cache files
+__pycache__/
+*.pyc

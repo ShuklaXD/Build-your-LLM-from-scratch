@@ -23,6 +23,21 @@ class SelfAttention_v2(nn.Module):
 
         # Softmax to get attention weights
         attn_weights = torch.softmax(attn_scores, dim=-1)
+        print("\nAttention Weights:\n", attn_weights)
+
+        # Create a simple lower triangular mask to avoid attending to future tokens
+        context_length = attn_scores.shape[0]
+        mask_simple = torch.tril(torch.ones(context_length, context_length))
+        print(mask_simple)
+
+        # Apply mask (if needed)
+        mask_simple = attn_weights * mask_simple
+        print("\nMasked Attention Weights:\n", mask_simple)
+
+        # Re-normalize after masking
+        row_sums = mask_simple.sum(dim=-1, keepdim=True)
+        mask_simple_norm = mask_simple / row_sums
+        print("\nRe-normalized Masked Attention Weights:\n", mask_simple_norm)
 
         # Weighted sum of values
         output = attn_weights @ values

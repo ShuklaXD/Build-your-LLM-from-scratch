@@ -16,28 +16,22 @@ class SelfAttention_v2(nn.Module):
 
         # Compute attention scores
         attn_scores = queries @ keys.T
-
-        # Scale scores
-        d_k = keys.shape[-1]
-        attn_scores = attn_scores / (d_k ** 0.5)
-
-        # Softmax to get attention weights
-        attn_weights = torch.softmax(attn_scores, dim=-1)
-        print("\nAttention Weights:\n", attn_weights)
+        print("\nAttention Scores:\n", attn_scores)
 
         # Create a simple lower triangular mask to avoid attending to future tokens
-        context_length = attn_scores.shape[0]
-        mask_simple = torch.tril(torch.ones(context_length, context_length))
-        print(mask_simple)
+        context_length = input_embeddings.shape[0]
+        mask = torch.triu(torch.ones(context_length, context_length), diagonal=1)
+        masked = attn_scores.masked_fill(mask.bool(), -torch.inf)
+        print("\nMasked Attention Scores:\n", masked)
 
         # Apply mask (if needed)
-        mask_simple = attn_weights * mask_simple
-        print("\nMasked Attention Weights:\n", mask_simple)
+        attn_weights = torch.softmax(masked / keys.shape[-1]**0.5, dim=1)
+        print("\nMasked Attention Weights:\n", attn_weights)
 
-        # Re-normalize after masking
-        row_sums = mask_simple.sum(dim=-1, keepdim=True)
-        mask_simple_norm = mask_simple / row_sums
-        print("\nRe-normalized Masked Attention Weights:\n", mask_simple_norm)
+        # Apply dropout for regularization
+        torch.manual_seed(123)
+        dropout = torch.nn.Dropout(0.5)
+        print(dropout(attn_weights))
 
         # Weighted sum of values
         output = attn_weights @ values

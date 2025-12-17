@@ -4,6 +4,7 @@ import torch.nn as nn
 class CausalAttention(nn.Module):
     def __init__(self, d_in, d_out, context_length, dropout, qkv_bias=False):
         super().__init__()
+        # weight matrices for query, key, value
         self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
         self.W_key = nn.Linear(d_in, d_out, bias=qkv_bias)
         self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
@@ -13,6 +14,7 @@ class CausalAttention(nn.Module):
 
     def forward(self, input_embeddings):
         b, num_tokens, dim_in = input_embeddings.shape
+        # Computed queries, keys, and values using the weight matrices / linear layers
         keys = self.W_key(input_embeddings)      # (b, num_tokens, d_out)
         queries = self.W_query(input_embeddings)  # (b, num_tokens, d_out)
         values = self.W_value(input_embeddings)   # (b, num_tokens, d_out
@@ -24,6 +26,16 @@ class CausalAttention(nn.Module):
         context_vec = attn_weights @ values  # (b, num_tokens, d_out)
         return context_vec
 
+class MultiHeadAttentionWrapper(nn.Module):
+    def __init__(self, d_in, d_out, context_length, dropout, num_heads, qkv_bias=False):
+        super().__init__()
+        self.heads = nn.ModuleList([
+            CausalAttention(d_in, d_out, context_length, dropout, qkv_bias) 
+                for _ in range(num_heads)
+         ])
+
+    def forward(self, x):
+        return torch.cat([head(x) for head in self.heads], dim=-1)
 
 # Example usage
 d_in = 3
@@ -44,4 +56,15 @@ if __name__ == "__main__":
     context_length = batch.shape[1]
     ca = CausalAttention(d_in, d_out, context_length, 0.0)
     context_vecs = ca(batch)
+    print(context_vecs)
     print("context_vecs.shape:", context_vecs.shape)
+
+    mha = MultiHeadAttentionWrapper(d_in, d_out, context_length, 0.0, num_heads=2)
+    context_vecs = mha(batch)
+    print(context_vecs)
+    print("context_vecs.shape:", context_vecs.shape)
+    # Output: torch.Size([2, 6, 4])
+    # The first dimension of the resulting context_vecs tensor is 2 since we have two input
+    # texts (the input texts are duplicated, which is why the context vectors are exactly the
+    # same for those). The second dimension refers to the 6 tokens in each input. The third
+    # dimension refers to the four-dimensional embedding of each token.

@@ -7,9 +7,3 @@ GPT_CONFIG_124M = {
     "drop_rate": 0.1,  # Dropout rate
     "qkv_bias": False  # Query-Key-Value bias
 }
-
-
-
-
-
-
